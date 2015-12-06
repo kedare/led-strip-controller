@@ -1,5 +1,5 @@
 {
-  "name": "ledstripcontroller",
+  "name": "led-strip-controller",
   "version": "1.0.0",
   "description": "This small application allows you to take control of an Particle.IO addressable RGB led strip",
   "main": "main.js",
