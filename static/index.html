@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>LED Strip Controller</title>
+    <script src="/jquery/jquery-2.1.4.min.js"></script>
+    <script src="/jquery.mobile/jquery.mobile-1.4.5.min.js"></script>
+    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile-1.4.5.min.css"/>
+    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile.icons-1.4.5.min.css"/>
+    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile.inline-svg-1.4.5.min.css"/>
+    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile.structure-1.4.5.min.css"/>
+    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile.theme-1.4.5.min.css"/>
+  </head>
+  <body>
+
+    <form>
+        <ul data-role="listview" data-inset="true">
+            <li class="ui-field-contain">
+                <label for="wait">Delay:</label>
+                <input type="range" name="wait" id="wait" value="0" min="0" max="10000" step="10" data-highlight="true" disabled="true">
+            </li>
+            <li class="ui-field-contain">
+                <label for="mode" class="select">Choose program:</label>
+                <select name="mode" id="mode" disabled="true">
+                </select>
+            </li>
+        </ul>
+    </form>
+<script type="text/javascript">
+$(document).ready( () => {
+    $.getJSON("/modes", (data) => {
+      $.each(data, (key, val) => {
+        $('#mode').append(`<option value="${key}">${key}</option>`)
+      })
+    })
+
+    $.getJSON("/mode", (data) => {
+      $('#mode').val(data.result)
+      $('#mode').selectmenu('enable')
+      $('#mode').selectmenu("refresh", true);
+    })
+
+    $.getJSON("/wait", (data) => {
+      $('#wait').val(data.result)
+      $('#wait').slider('enable')
+      $('#wait').slider('refresh')
+    })
+
+    $('#mode').on('change', () => {
+      $.post('/mode', {'mode': $('#mode').val()}, (data) => {})
+    })
+
+
+    $('#wait').on('slidestop', () => {
+      alert('Wait changed')
+      $.post('/wait', {'wait': $('#wait').val()}, (data) => {})
+    })
+})
+</script>
+  </body>
+</html>
