@@ -52,7 +52,6 @@ $(document).ready( () => {
 
 
     $('#wait').on('slidestop', () => {
-      alert('Wait changed')
       $.post('/wait', {'wait': $('#wait').val()}, (data) => {})
     })
 })
