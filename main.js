@@ -116,7 +116,6 @@ app.get('/mode', auth, (req, res) => {
     if (err) {
       console.log('An error occurred while getting mode:', err);
     } else {
-      console.log('Device mode retrieved successfully:', data);
       res.setHeader('Content-Type', 'application/json');
       res.send(data)
       res.end()
@@ -137,12 +136,11 @@ app.post('/wait', auth, function (req, res) {
 })
 
 app.get('/wait', auth, function (req, res) {
-  log.info("Get mode requested")
+  log.info("Get wait requested")
   device.getVariable('wait', function(err, data) {
   if (err) {
     console.log('An error occurred while getting wait:', err);
   } else {
-    console.log('Device wait retrieved successfully:', data);
     res.setHeader('Content-Type', 'application/json');
     res.send(data)
     res.end()
