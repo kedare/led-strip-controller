@@ -1,0 +1,6 @@
+{
+  "name": "LED Strip Controller",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}

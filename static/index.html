@@ -5,6 +5,7 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1">
     <meta name="theme-color" content="#6155D4">
     <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
     <title>LED Strip Controller</title>
     <script src="/jquery/jquery-2.1.4.min.js"></script>
     <script src="/jquery.mobile/jquery.mobile-1.4.5.min.js"></script>
@@ -20,7 +21,7 @@
         <ul data-role="listview" data-inset="true">
             <li class="ui-field-contain">
                 <label for="wait">Delay:</label>
-                <input type="range" name="wait" id="wait" value="0" min="0" max="10000" step="10" data-highlight="true" disabled="true">
+                <input type="range" name="wait" id="wait" value="0" min="0" max="1000" step="10" data-highlight="true" disabled="true">
             </li>
             <li class="ui-field-contain">
                 <label for="mode" class="select">Choose program:</label>
