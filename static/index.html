@@ -32,31 +32,65 @@
     </form>
 <script type="text/javascript">
 $(document).ready( () => {
-    $.getJSON("/modes", (data) => {
+    var loading = 0;
+    $.mobile.loading( 'show', {
+      text: 'Loading',
+      textVisible: true,
+      theme: 'b'
+    })
+
+    $.getJSON('/modes', (data) => {
       $.each(data, (key, val) => {
         $('#mode').append(`<option value="${key}">${key}</option>`)
       })
+      loading--
+      if (loading == 0 ) {$.mobile.loading('hide') }
     })
+    loading++
 
-    $.getJSON("/mode", (data) => {
+    $.getJSON('/mode', (data) => {
       $('#mode').val(data.result)
       $('#mode').selectmenu('enable')
-      $('#mode').selectmenu("refresh", true);
+      $('#mode').selectmenu("refresh", true)
+      loading--
+      if (loading == 0 ) {$.mobile.loading('hide') }
     })
+    loading++
 
-    $.getJSON("/wait", (data) => {
+    $.getJSON('/wait', (data) => {
       $('#wait').val(data.result)
       $('#wait').slider('enable')
       $('#wait').slider('refresh')
+      loading--
+      if (loading == 0 ) {$.mobile.loading('hide') }
     })
+    loading++
 
     $('#mode').on('change', () => {
-      $.post('/mode', {'mode': $('#mode').val()}, (data) => {})
+      
+      $.mobile.loading( 'show', {
+        text: 'Applying',
+        textVisible: true,
+        theme: "b"
+      })
+
+      $.post('/mode', {'mode': $('#mode').val()}, (data) => {
+        $.mobile.loading('hide')
+      })
     })
 
 
     $('#wait').on('slidestop', () => {
-      $.post('/wait', {'wait': $('#wait').val()}, (data) => {})
+      
+      $.mobile.loading( 'show', {
+        text: 'Applying',
+        textVisible: true,
+        theme: "b"
+      })
+      
+      $.post('/wait', {'wait': $('#wait').val()}, (data) => {
+        $.mobile.loading('hide')
+      })
     })
 })
 </script>
