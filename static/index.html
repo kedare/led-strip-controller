@@ -20,14 +20,20 @@
     <form>
         <ul data-role="listview" data-inset="true">
             <li class="ui-field-contain">
-                <label for="wait">Delay:</label>
-                <input type="range" name="wait" id="wait" value="0" min="0" max="1000" step="10" data-highlight="true" disabled="true">
-            </li>
-            <li class="ui-field-contain">
                 <label for="mode" class="select">Choose program:</label>
                 <select name="mode" id="mode" disabled="true">
                 </select>
             </li>
+
+              <li class="ui-field-contain">
+                  <label for="wait">Delay:</label>
+                  <input type="range" name="wait" id="wait" value="0" min="0" max="1000" step="10" data-highlight="true" disabled="true">
+              </li>
+
+              <li class="ui-field-contain">
+                  <label for="power">Power:</label>
+                  <input type="range" name="power" id="power" value="0" min="0" max="1" step="0.1" data-highlight="true" disabled="true">
+              </li>
         </ul>
     </form>
 <script type="text/javascript">
@@ -66,8 +72,17 @@ $(document).ready( () => {
     })
     loading++
 
+    $.getJSON('/power', (data) => {
+      $('#power').val(data.result)
+      $('#power').slider('enable')
+      $('#power').slider('refresh')
+      loading--
+      if (loading == 0 ) {$.mobile.loading('hide') }
+    })
+    loading++
+
     $('#mode').on('change', () => {
-      
+
       $.mobile.loading( 'show', {
         text: 'Applying',
         textVisible: true,
@@ -81,14 +96,27 @@ $(document).ready( () => {
 
 
     $('#wait').on('slidestop', () => {
-      
+
       $.mobile.loading( 'show', {
         text: 'Applying',
         textVisible: true,
         theme: "b"
       })
-      
+
       $.post('/wait', {'wait': $('#wait').val()}, (data) => {
+        $.mobile.loading('hide')
+      })
+    })
+
+    $('#power').on('slidestop', () => {
+
+      $.mobile.loading( 'show', {
+        text: 'Applying',
+        textVisible: true,
+        theme: "b"
+      })
+
+      $.post('/power', {'power': $('#power').val()}, (data) => {
         $.mobile.loading('hide')
       })
     })

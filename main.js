@@ -94,6 +94,7 @@ app.get('/modes', auth, (req, res) => {
   res.send(modes)
   res.end()
 })
+
 app.post('/mode', auth, (req, res) => {
   log.info("Set mode to", req.body.mode, "requested")
   if(req.body.mode in modes) {
@@ -146,6 +147,31 @@ app.get('/wait', auth, function (req, res) {
     res.end()
   }
 });
+
+app.post('/power', auth, function (req, res) {
+  log.info("Set power to", req.body.power, "requested")
+  device.callFunction("setPower", req.body.power, (err, data) => {
+    if (err) {
+      log.error("Set power to", req.body.power, "KO:", err)
+    } else {
+      log.info("Set power to", req.body.power, "OK")
+    }
+  })
+  res.end()
+})
+
+app.get('/power', auth, function (req, res) {
+  log.info("Get power requested")
+  device.getVariable('power', function(err, data) {
+    if (err) {
+      console.log('An error occurred while getting wait:', err);
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      res.send(data)
+      res.end()
+    }
+  });
+})
 })
 
 app.listen(httpPort, () => {
