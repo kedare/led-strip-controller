@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 // Importing required libraries
 var process = require('process')
 var Spark = require('spark')
@@ -7,30 +7,30 @@ var express = require('express')
 var bodyParser = require('body-parser')
 var basicAuth = require('basic-auth')
 
-var token = process.env.CONTROLLER_TOKEN
-var httpPort = process.env.CONTROLLER_PORT
-var authorizedUser = process.env.CONTROLLER_USER
-var authorizedPass = process.env.CONTROLLER_PASS
+var token = process.env.LED_CONTROLLER_TOKEN
+var httpPort = process.env.LED_CONTROLLER_PORT || 8080
+var authorizedUser = process.env.LED_CONTROLLER_USER || 'user'
+var authorizedPass = process.env.LED_CONTROLLER_PASS || 'password'
 
 // Allowed mode and params
 var modes = {
-  'colorWipe': {
-    'params': ['r','g','b']
+  colorWipe: {
+    params: ['r','g','b'],
   },
-  'rainbow': {
-    'params': null
+  rainbow: {
+    params: null,
   },
-  'rainbowCycle': {
-    'params': null
+  rainbowCycle: {
+    params: null,
   },
-  'fullColorCycle': {
-    'params': null
+  fullColorCycle: {
+    params: null,
   },
-  'randomDots': {
-    'params': null
+  randomDots: {
+    params: null,
   },
-  'turnedOff': {
-    'params': null
+  turnedOff: {
+    params: null,
   },
 }
 
@@ -43,7 +43,7 @@ var log = bunyan.createLogger({name: 'LedStripController'})
 // Define login callback
 var loginCallback = (err, body) => {
   if (err) {
-    log.error('API login KO: ', err)
+    log.error(`API login KO: ${err}`)
   } else {
     log.info('API login OK')
     process()
@@ -53,7 +53,7 @@ var loginCallback = (err, body) => {
 var process = () => {
   Spark.listDevices((err, devices) => {
     device = devices[0];
-    log.info("Got device", device.attributes.name)
+    log.info(`Got device ${device.attributes.name}`)
   })
 }
 
@@ -62,15 +62,12 @@ Spark.login({accessToken: token}, loginCallback)
 
 // Web server
 var app = express()
-app.use(express.static('static'))
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: true}));
 
 // Authentication
 var auth = (req, res, next) => {
   var unauthorized = (res) => {
     res.set('WWW-Authenticate', 'Basic realm=Authorization Required')
-    return res.send(401)
+    return res.sendStatus(401)
   }
 
   var user = basicAuth(req)
@@ -86,94 +83,53 @@ var auth = (req, res, next) => {
   }
 }
 
-// Handler definitions
+// DRY
+var defineAccessor = (endpointName, variableName, setterName) => {
+  app.post(`/${endpointName}`, auth, (req, res) => {
+    log.info(`Set mode to ${req.body[variableName]} requested`)
+    if (req[variableName].mode in modes) {
+      device.callFunction(setterName, req.body[variableName], (err, data) => {
+        if (err) {
+          log.error(`Set mode to ${req.body[variableName]} KO:`, err)
+        } else {
+          log.info(`Set mode to ${req.body[variableName]} OK`)
+        }
+      })
+    } else {
+      log.error(`Mode ${req.body[variableName]} not found`)
+    }
+    res.end()
+  })
+
+  app.get(`/${endpointName}`, auth, (req, res) => {
+    log.info(`Get ${variableName} requested`)
+    device.getVariable(variableName, function(err, data) {
+      if (err) {
+        console.log(`An error occurred while getting ${variableName}: ${err}`)
+      } else {
+        res.setHeader('Content-Type', 'application/json')
+        res.send(data)
+        res.end()
+      }
+    });
+  })
+}
 
 app.get('/modes', auth, (req, res) => {
-  log.info("Get modes requested")
+  log.info('Get modes requested')
   res.setHeader('Content-Type', 'application/json');
   res.send(modes)
   res.end()
 })
 
-app.post('/mode', auth, (req, res) => {
-  log.info("Set mode to", req.body.mode, "requested")
-  if(req.body.mode in modes) {
-    device.callFunction("setMode", req.body.mode, (err, data) => {
-      if (err) {
-        log.error("Set mode to", req.body.mode, "KO:", err)
-      } else {
-        log.info("Set mode to", req.body.mode, "OK")
-      }
-    })
-  } else {
-    log.error("Mode", req.body.mode, "not found")
-  }
-  res.end()
-})
+defineAccessor('mode', 'mode', 'setMode')
+defineAccessor('wait', 'wait', 'setWait')
+defineAccessor('power', 'power', 'setPower')
 
-app.get('/mode', auth, (req, res) => {
-  log.info("Get mode requested")
-  device.getVariable('mode', function(err, data) {
-    if (err) {
-      console.log('An error occurred while getting mode:', err);
-    } else {
-      res.setHeader('Content-Type', 'application/json');
-      res.send(data)
-      res.end()
-    }
-  });
-})
 
-app.post('/wait', auth, function (req, res) {
-  log.info("Set wait to", req.body.wait, "requested")
-  device.callFunction("setWait", req.body.wait, (err, data) => {
-    if (err) {
-      log.error("Set wait to", req.body.wait, "KO:", err)
-    } else {
-      log.info("Set wait to", req.body.wait, "OK")
-    }
-  })
-  res.end()
-})
-
-app.get('/wait', auth, function (req, res) {
-  log.info("Get wait requested")
-  device.getVariable('wait', function(err, data) {
-  if (err) {
-    console.log('An error occurred while getting wait:', err);
-  } else {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(data)
-    res.end()
-  }
-});
-
-app.post('/power', auth, function (req, res) {
-  log.info("Set power to", req.body.power, "requested")
-  device.callFunction("setPower", req.body.power, (err, data) => {
-    if (err) {
-      log.error("Set power to", req.body.power, "KO:", err)
-    } else {
-      log.info("Set power to", req.body.power, "OK")
-    }
-  })
-  res.end()
-})
-
-app.get('/power', auth, function (req, res) {
-  log.info("Get power requested")
-  device.getVariable('power', function(err, data) {
-    if (err) {
-      console.log('An error occurred while getting wait:', err);
-    } else {
-      res.setHeader('Content-Type', 'application/json');
-      res.send(data)
-      res.end()
-    }
-  });
-})
-})
-
+app.use(auth, express.static('static'))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: true}));
 app.listen(httpPort, () => {
   log.info('Express listening on', httpPort)
 })
