@@ -6,6 +6,9 @@ var bunyan = require('bunyan')
 var express = require('express')
 var bodyParser = require('body-parser')
 var basicAuth = require('basic-auth')
+var cluster = require('cluster')
+var os = require('os')
+
 
 var token = process.env.LED_CONTROLLER_TOKEN
 var httpPort = process.env.LED_CONTROLLER_PORT || 8080
@@ -130,6 +133,27 @@ defineAccessor('power', 'power', 'setPower')
 app.use(auth, express.static('static'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}));
-app.listen(httpPort, () => {
-  log.info('Express listening on', httpPort)
-})
+
+if (cluster.isMaster) {
+  var numWorkers = os.cpus().length
+  log.info('Master cluster setting up ' + numWorkers + ' workers...')
+
+  for (var i = 0; i < numWorkers; i++) {
+    cluster.fork()
+  }
+
+  cluster.on('online', (worker) => {
+    log.info('Worker ' + worker.process.pid + ' is online');
+  });
+
+  cluster.on('exit', (worker, code, signal) => {
+    log.info(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
+    log.info('Starting a new worker');
+    cluster.fork();
+  });
+
+} else {
+  app.listen(httpPort, () => {
+    log.info('Express listening on', httpPort)
+  })
+}
