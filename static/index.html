@@ -9,35 +9,38 @@
     <title>LED Strip Controller</title>
     <script src="/jquery/jquery-2.1.4.min.js"></script>
     <script src="/jquery.mobile/jquery.mobile-1.4.5.min.js"></script>
-    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile-1.4.5.min.css"/>
-    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile.icons-1.4.5.min.css"/>
-    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile.inline-svg-1.4.5.min.css"/>
-    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile.structure-1.4.5.min.css"/>
-    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile.theme-1.4.5.min.css"/>
+    <link rel="stylesheet" href="/jquery.mobile/jquery.mobile.flatui.min.css"/>
   </head>
   <body>
 
-    <form>
-        <ul data-role="listview" data-inset="true">
-            <li class="ui-field-contain">
-                <label for="mode" class="select">Choose program:</label>
-                <select name="mode" id="mode" disabled="true">
-                </select>
-            </li>
+    <div data-role="page" id="mainPage">
+        <div data-role="header">
+        <h1>LED Strip Controller</h1>
+      </div>
+      <div role="main" class="ui-content">
+        <form>
+            <ul data-role="listview" data-inset="true">
+                <li class="ui-field-contain">
+                    <label for="mode" class="select">Choose program:</label>
+                    <select name="mode" id="mode" disabled="true">
+                    </select>
+                </li>
 
-              <li class="ui-field-contain">
-                  <label for="wait">Delay:</label>
-                  <input type="range" name="wait" id="wait" value="0" min="0" max="1000" step="10" data-highlight="true" disabled="true">
-              </li>
+                  <li class="ui-field-contain">
+                      <label for="wait">Delay:</label>
+                      <input type="range" name="wait" id="wait" value="0" min="0" max="1000" step="10" data-highlight="true" disabled="true">
+                  </li>
 
-              <li class="ui-field-contain">
-                  <label for="power">Power:</label>
-                  <input type="range" name="power" id="power" value="0" min="0" max="100" step="1" data-highlight="true" disabled="true">
-              </li>
-        </ul>
-    </form>
+                  <li class="ui-field-contain">
+                      <label for="power">Power:</label>
+                      <input type="range" name="power" id="power" value="0" min="0" max="100" step="1" data-highlight="true" disabled="true">
+                  </li>
+            </ul>
+        </form>
+      </div>
+    </div>
 <script type="text/javascript">
-$(document).ready( () => {
+$(document).on('ready', () => {
     var loading = 0;
     $.mobile.loading( 'show', {
       text: 'Loading',
@@ -58,6 +61,8 @@ $(document).ready( () => {
       $('#mode').val(data.result)
       $('#mode').selectmenu('enable')
       $('#mode').selectmenu("refresh", true)
+
+
       loading--
       if (loading == 0 ) {$.mobile.loading('hide') }
     })
