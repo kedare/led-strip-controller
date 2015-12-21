@@ -86,21 +86,21 @@ var auth = (req, res, next) => {
   }
 }
 
+app.use(auth, express.static('static'))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: true}));
+
 // DRY
 var defineAccessor = (endpointName, variableName, setterName) => {
   app.post(`/${endpointName}`, auth, (req, res) => {
     log.info(`Set mode to ${req.body[variableName]} requested`)
-    if (req[variableName].mode in modes) {
-      device.callFunction(setterName, req.body[variableName], (err, data) => {
-        if (err) {
-          log.error(`Set mode to ${req.body[variableName]} KO:`, err)
-        } else {
-          log.info(`Set mode to ${req.body[variableName]} OK`)
-        }
-      })
-    } else {
-      log.error(`Mode ${req.body[variableName]} not found`)
-    }
+    device.callFunction(setterName, req.body[variableName], (err, data) => {
+      if (err) {
+        log.error(`Set mode to ${req.body[variableName]} KO:`, err)
+      } else {
+        log.info(`Set mode to ${req.body[variableName]} OK`)
+      }
+    })
     res.end()
   })
 
@@ -128,11 +128,6 @@ app.get('/modes', auth, (req, res) => {
 defineAccessor('mode', 'mode', 'setMode')
 defineAccessor('wait', 'wait', 'setWait')
 defineAccessor('power', 'power', 'setPower')
-
-
-app.use(auth, express.static('static'))
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: true}));
 
 if (cluster.isMaster) {
   var numWorkers = os.cpus().length
