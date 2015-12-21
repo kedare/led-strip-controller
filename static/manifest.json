@@ -38,7 +38,7 @@
 			"density": 4
 		}
 	],
-	"start_url": "http://led.ntx.so",
+	"start_url": "/",
 	"display": "standalone",
 	"orientation": "portrait"
 }
