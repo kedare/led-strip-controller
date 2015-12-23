@@ -11,8 +11,8 @@ SYSTEM_MODE(AUTOMATIC);
 #define PIXEL_COUNT 60
 #define PIXEL_TYPE WS2812B
 
-// How much to divide the light intensity, 1 is maximum power, 0 is off
-#define DEFAULT_POWER 0.8
+// How much to divide the light intensity, 100 is maximum power, 0 is off
+#define DEFAULT_POWER 80
 
 #define DEFAULT_MODE "turnOff"
 #define DEFAULT_WAIT 1000
@@ -32,7 +32,7 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 String mode = DEFAULT_MODE;
 uint32_t params[64];
 uint32_t wait = DEFAULT_WAIT;
-float power = DEFAULT_POWER;
+uint32_t power = DEFAULT_POWER;
 
 void setup() {
     Particle.variable("mode", mode);
@@ -56,7 +56,7 @@ int setWait(String newWait) {
 }
 
 int setPower(String newPower) {
-    power = newPower.toFloat();
+    power = newPower.toInt();
     return 0;
 }
 
@@ -188,13 +188,13 @@ void randomDots() {
 
   strip.show();
   for(j=0; j<101; j++) { // 1 cycle of all colors on wheel
-    strip.setPixelColor(currentDot, strip.Color(maxR*(j/100)*power ,maxG*(j/100)*power ,maxB*(j/100)*power ));
+    strip.setPixelColor(currentDot, strip.Color(maxR*(j/100)*(power*0.01) ,maxG*(j/100)*(power*0.01) ,maxB*(j/100)*(power*0.01) ));
     strip.show();
     if(mode != "randomDots") { break; }
     delay(wait);
   }
   for(j=100; j>0; j--) { // 1 cycle of all colors on wheel
-    strip.setPixelColor(currentDot, strip.Color(maxR*(j/100)*power ,maxG*(j/100)*power ,maxB*(j/100)*power));
+    strip.setPixelColor(currentDot, strip.Color(maxR*(j/100)*(power*0.01) ,maxG*(j/100)*(power*0.01) ,maxB*(j/100)*(power*0.01)));
     strip.show();
     if(mode != "randomDots") { break; }
     delay(wait);
@@ -210,7 +210,7 @@ void fadeCycle(uint16_t steps, uint16_t r1, uint16_t g1, uint16_t b1, uint16_t r
         gn = g1 + (g2-g1) * (j / steps);
         bn = r1 + (b2-b1) * (j / steps);
         for(i=1; i< strip.numPixels(); i++) {
-            strip.setPixelColor(i, strip.Color(rn*power, gn*power, bn*power));
+            strip.setPixelColor(i, strip.Color(rn*(power*0.01), gn*(power*0.01), bn*(power*0.01)));
         }
         strip.show();
         delay(wait);
@@ -221,12 +221,12 @@ void fadeCycle(uint16_t steps, uint16_t r1, uint16_t g1, uint16_t b1, uint16_t r
 // The colours are a transition r - g - b - back to r.
 uint32_t Wheel(byte WheelPos) {
   if(WheelPos < 85) {
-   return strip.Color((WheelPos * 3)*power, (255 - WheelPos * 3)*power, 0);
+   return strip.Color((WheelPos * 3)*(power*0.01), (255 - WheelPos * 3)*(power*0.01), 0);
   } else if(WheelPos < 170) {
    WheelPos -= 85;
-   return strip.Color((255 - WheelPos * 3)*power, 0, (WheelPos * 3)*power);
+   return strip.Color((255 - WheelPos * 3)*(power*0.01), 0, (WheelPos * 3)*(power*0.01));
   } else {
    WheelPos -= 170;
-   return strip.Color(0, (WheelPos * 3)*power, (255 - WheelPos * 3)*power);
+   return strip.Color(0, (WheelPos * 3)*(power*0.01), (255 - WheelPos * 3)*(power*0.01));
   }
 }
