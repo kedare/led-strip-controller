@@ -40,8 +40,6 @@ var modes = {
   },
 }
 
-"o".
-
 // Device
 var device;
 
