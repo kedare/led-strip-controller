@@ -32,10 +32,15 @@ var modes = {
   randomDots: {
     params: null,
   },
+  frozen: {
+    params: null,
+  },
   turnedOff: {
     params: null,
   },
 }
+
+"o".
 
 // Device
 var device;
@@ -93,12 +98,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 // DRY
 var defineAccessor = (endpointName, variableName, setterName) => {
   app.post(`/${endpointName}`, auth, (req, res) => {
-    log.info(`Set mode to ${req.body[variableName]} requested`)
+    log.info(`Set ${variableName} to ${req.body[variableName]} requested`)
     device.callFunction(setterName, req.body[variableName], (err, data) => {
       if (err) {
-        log.error(`Set mode to ${req.body[variableName]} KO:`, err)
+        log.error(`Set ${variableName} to ${req.body[variableName]} KO:`, err)
       } else {
-        log.info(`Set mode to ${req.body[variableName]} OK`)
+        log.info(`Set ${variableName} to ${req.body[variableName]} OK`)
       }
     })
     res.end()

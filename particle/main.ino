@@ -79,6 +79,9 @@ void loop() {
     else if (mode == "turnOff") {
         turnedOff();
     }
+    else if (mode == "frozen") {
+        delay(1000);
+    }
     else {
         turnedOff();
     }
