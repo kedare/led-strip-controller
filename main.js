@@ -11,7 +11,7 @@ var os = require('os')
 
 
 var token = process.env.LED_CONTROLLER_TOKEN
-var httpPort = process.env.LED_CONTROLLER_PORT || 8080
+var httpPort = process.env.PORT || 8080
 var authorizedUser = process.env.LED_CONTROLLER_USER || 'user'
 var authorizedPass = process.env.LED_CONTROLLER_PASS || 'password'
 
