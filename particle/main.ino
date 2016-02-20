@@ -14,8 +14,10 @@ SYSTEM_MODE(AUTOMATIC);
 // How much to divide the light intensity, 100 is maximum power, 0 is off
 #define DEFAULT_POWER 80
 
-#define DEFAULT_MODE "turnOff"
+#define DEFAULT_MODE "off"
 #define DEFAULT_WAIT 1000
+
+#define DEFAULT_COLOR 0xFF40FF
 
 /* ======================= Prototype Defs =========================== */
 
@@ -30,17 +32,22 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 // Init default mode
 String mode = DEFAULT_MODE;
-uint32_t params[64];
 uint32_t wait = DEFAULT_WAIT;
 uint32_t power = DEFAULT_POWER;
+byte colorRgb[3];
+long colorHex = DEFAULT_COLOR;
+String colorString;
 
 void setup() {
     Particle.variable("mode", mode);
     Particle.variable("wait", wait);
     Particle.variable("power", power);
+    Particle.variable("color", colorString);
     Particle.function("setMode", setMode);
     Particle.function("setWait", setWait);
     Particle.function("setPower", setPower);
+    Particle.function("setColor", setColor);
+    setColor(String(DEFAULT_COLOR, HEX));
     strip.begin();
     strip.show();
 }
@@ -60,9 +67,24 @@ int setPower(String newPower) {
     return 0;
 }
 
+int setColor(String newColor) {
+  colorHex = (long) strtol(newColor, NULL, 16);
+  int r = colorHex >> 16;
+  int g = colorHex >> 8 & 0xFF;
+  int b = colorHex & 0xFF;
+  colorRgb[0] = r;
+  colorRgb[1] = g;
+  colorRgb[2] = b;
+  colorString = "#" + String(colorHex, HEX);
+  return 1;
+}
+
 void loop() {
     if (mode == "colorWipe") {
-        colorWipe(strip.Color(params[0],params[1],params[2]));
+        colorWipe(strip.Color(colorRgb[0]*(power*0.01), colorRgb[1]*(power*0.01), colorRgb[2]*(power*0.01)));
+    }
+    if(mode == "steadyColor") {
+        steadyColor(strip.Color(colorRgb[0]*(power*0.01), colorRgb[1]*(power*0.01), colorRgb[2]*(power*0.01)));
     }
     else if (mode == "rainbow") {
         rainbow();
@@ -76,7 +98,7 @@ void loop() {
     else if (mode == "randomDots") {
         randomDots();
     }
-    else if (mode == "turnOff") {
+    else if (mode == "off") {
         turnedOff();
     }
     else if (mode == "frozen") {
@@ -111,21 +133,20 @@ void loop() {
   //colorAll(strip.Color(0, 255, 255), 50); // Magenta
 }
 
+void steadyColor(uint32_t c) {
+    for(uint16_t i=0; i<strip.numPixels(); i++) {
+        strip.setPixelColor(i, c);
+    }
+    strip.show();
+    delay(1000);
+}
+
 void turnedOff() {
     for(uint16_t i=0; i<strip.numPixels(); i++) {
         strip.setPixelColor(i, strip.Color(0,0,0));
     }
     strip.show();
     delay(1000);
-}
-
-// Set all pixels in the strip to a solid color, then wait (ms)
-void colorAll(uint32_t c) {
-    for(uint16_t i=0; i<strip.numPixels(); i++) {
-        strip.setPixelColor(i, c);
-    }
-    strip.show();
-    delay(wait);
 }
 
 // Fill the dots one after the other with a color, wait (ms) after each one

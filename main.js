@@ -1,24 +1,27 @@
 'use strict'
 // Importing required libraries
-var process = require('process')
-var Spark = require('spark')
-var bunyan = require('bunyan')
-var express = require('express')
-var bodyParser = require('body-parser')
-var basicAuth = require('basic-auth')
-var cluster = require('cluster')
-var os = require('os')
+const process = require('process')
+const Spark = require('spark')
+const bunyan = require('bunyan')
+const express = require('express')
+const bodyParser = require('body-parser')
+const basicAuth = require('basic-auth')
+const cluster = require('cluster')
+const os = require('os')
 
 
-var token = process.env.LED_CONTROLLER_TOKEN
-var httpPort = process.env.PORT || 8080
-var authorizedUser = process.env.LED_CONTROLLER_USER || 'user'
-var authorizedPass = process.env.LED_CONTROLLER_PASS || 'password'
+const token = process.env.LED_CONTROLLER_TOKEN
+const httpPort = process.env.PORT || 8080
+const authorizedUser = process.env.LED_CONTROLLER_USER || 'user'
+const authorizedPass = process.env.LED_CONTROLLER_PASS || 'password'
 
 // Allowed mode and params
-var modes = {
+const modes = {
+  steadyColor: {
+    params: null,
+  },
   colorWipe: {
-    params: ['r','g','b'],
+    params: null,
   },
   rainbow: {
     params: null,
@@ -44,19 +47,19 @@ var modes = {
 var device;
 
 // Logging configuration
-var log = bunyan.createLogger({name: 'LedStripController'})
+const log = bunyan.createLogger({name: 'LedStripController'})
 
 // Define login callback
-var loginCallback = (err, body) => {
+const loginCallback = (err, body) => {
   if (err) {
     log.error(`API login KO: ${err}`)
   } else {
     log.info('API login OK')
-    process()
+    findDevice()
   }
 }
 
-var process = () => {
+const findDevice = () => {
   Spark.listDevices((err, devices) => {
     device = devices[0];
     log.info(`Got device ${device.attributes.name}`)
@@ -67,16 +70,16 @@ var process = () => {
 Spark.login({accessToken: token}, loginCallback)
 
 // Web server
-var app = express()
+const app = express()
 
 // Authentication
-var auth = (req, res, next) => {
-  var unauthorized = (res) => {
+const auth = (req, res, next) => {
+  const unauthorized = (res) => {
     res.set('WWW-Authenticate', 'Basic realm=Authorization Required')
     return res.sendStatus(401)
   }
 
-  var user = basicAuth(req)
+  let user = basicAuth(req)
 
   if (!user || !user.name || !user.pass) {
     return unauthorized(res)
@@ -94,7 +97,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}));
 
 // DRY
-var defineAccessor = (endpointName, variableName, setterName) => {
+const defineAccessor = (endpointName, variableName, setterName) => {
   app.post(`/${endpointName}`, auth, (req, res) => {
     log.info(`Set ${variableName} to ${req.body[variableName]} requested`)
     device.callFunction(setterName, req.body[variableName], (err, data) => {
@@ -131,27 +134,8 @@ app.get('/modes', auth, (req, res) => {
 defineAccessor('mode', 'mode', 'setMode')
 defineAccessor('wait', 'wait', 'setWait')
 defineAccessor('power', 'power', 'setPower')
+defineAccessor('color', 'color', 'setColor')
 
-if (cluster.isMaster) {
-  var numWorkers = os.cpus().length
-  log.info('Master cluster setting up ' + numWorkers + ' workers...')
-
-  for (var i = 0; i < numWorkers; i++) {
-    cluster.fork()
-  }
-
-  cluster.on('online', (worker) => {
-    log.info('Worker ' + worker.process.pid + ' is online');
-  });
-
-  cluster.on('exit', (worker, code, signal) => {
-    log.info(`Worker ${worker.process.pid} died with code: ${code}, and signal: ${signal}`);
-    log.info('Starting a new worker');
-    cluster.fork();
-  });
-
-} else {
-  app.listen(httpPort, () => {
-    log.info('Express listening on', httpPort)
-  })
-}
+app.listen(httpPort, () => {
+  log.info('Express listening on', httpPort)
+})
