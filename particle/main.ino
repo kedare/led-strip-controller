@@ -34,22 +34,35 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 String mode = DEFAULT_MODE;
 uint32_t wait = DEFAULT_WAIT;
 uint32_t power = DEFAULT_POWER;
-byte colorRgb[3];
-long colorHex = DEFAULT_COLOR;
-String colorString;
+
+// TODO DRY
+uint16_t colorRgb1[3];
+long colorHex1 = DEFAULT_COLOR;
+String colorString1;
+uint16_t colorRgb2[3];
+long colorHex2 = DEFAULT_COLOR;
+String colorString2;
+
 
 void setup() {
     Particle.variable("mode", mode);
     Particle.variable("wait", wait);
     Particle.variable("power", power);
-    Particle.variable("color", colorString);
+    Particle.variable("color1", colorString1);
+    Particle.variable("color2", colorString2);
     Particle.function("setMode", setMode);
     Particle.function("setWait", setWait);
     Particle.function("setPower", setPower);
-    Particle.function("setColor", setColor);
-    setColor(String(DEFAULT_COLOR, HEX));
+    Particle.function("setColor1", setColor1);
+    Particle.function("setColor2", setColor2);
+    setColor1(String(DEFAULT_COLOR, HEX));
+    setColor2(String(DEFAULT_COLOR, HEX));
     strip.begin();
     strip.show();
+}
+
+float getIntermediate(float a, float b, float maxStep, float step) {
+  return a + (b - a) * ((step/100*maxStep)/100);
 }
 
 int setMode(String newMode) {
@@ -67,24 +80,44 @@ int setPower(String newPower) {
     return 0;
 }
 
-int setColor(String newColor) {
-  colorHex = (long) strtol(newColor, NULL, 16);
-  int r = colorHex >> 16;
-  int g = colorHex >> 8 & 0xFF;
-  int b = colorHex & 0xFF;
-  colorRgb[0] = r;
-  colorRgb[1] = g;
-  colorRgb[2] = b;
-  colorString = "#" + String(colorHex, HEX);
+
+// TODO DRY
+int setColor1(String newColor) {
+  colorHex1 = (long) strtol(newColor, NULL, 16);
+  int r = colorHex1 >> 16;
+  int g = colorHex1 >> 8 & 0xFF;
+  int b = colorHex1 & 0xFF;
+  colorRgb1[0] = r;
+  colorRgb1[1] = g;
+  colorRgb1[2] = b;
+  colorString1 = "#" + String(colorHex1, HEX);
+  return 1;
+}
+
+int setColor2(String newColor) {
+  colorHex2 = (long) strtol(newColor, NULL, 16);
+  int r = colorHex2 >> 16;
+  int g = colorHex2 >> 8 & 0xFF;
+  int b = colorHex2 & 0xFF;
+  colorRgb2[0] = r;
+  colorRgb2[1] = g;
+  colorRgb2[2] = b;
+  colorString2 = "#" + String(colorHex2, HEX);
   return 1;
 }
 
 void loop() {
     if (mode == "colorWipe") {
-        colorWipe(strip.Color(colorRgb[0]*(power*0.01), colorRgb[1]*(power*0.01), colorRgb[2]*(power*0.01)));
+        colorWipe(strip.Color(colorRgb1[0]*(power*0.01), colorRgb1[1]*(power*0.01), colorRgb1[2]*(power*0.01)));
     }
-    if(mode == "steadyColor") {
-        steadyColor(strip.Color(colorRgb[0]*(power*0.01), colorRgb[1]*(power*0.01), colorRgb[2]*(power*0.01)));
+    else if(mode == "steadyColor") {
+        steadyColor(strip.Color(colorRgb1[0]*(power*0.01), colorRgb1[1]*(power*0.01), colorRgb1[2]*(power*0.01)));
+    }
+    else if (mode == "fadeCycle") {
+        fadeCycle(100, colorRgb1[0], colorRgb1[1], colorRgb1[2], colorRgb2[0], colorRgb2[1], colorRgb2[2]);
+    }
+    else if (mode == "gradient") {
+        gradient(colorRgb1[0], colorRgb1[1], colorRgb1[2], colorRgb2[0], colorRgb2[1], colorRgb2[2]);
     }
     else if (mode == "rainbow") {
         rainbow();
@@ -226,19 +259,44 @@ void randomDots() {
   strip.setPixelColor(currentDot, strip.Color(0,0,0));
 }
 
-// NOT WORKING YET
 void fadeCycle(uint16_t steps, uint16_t r1, uint16_t g1, uint16_t b1, uint16_t r2, uint16_t g2, uint16_t b2) {
     uint16_t i, j, rn, gn, bn;
     for(j=1; j<steps; j++) {
-        rn = r1 + (r2-r1) * (j / steps);
-        gn = g1 + (g2-g1) * (j / steps);
-        bn = r1 + (b2-b1) * (j / steps);
+        rn = getIntermediate(r1, r2, steps, j);
+        gn = getIntermediate(g1, g2, steps, j);
+        bn = getIntermediate(b1, b2, steps, j);
         for(i=1; i< strip.numPixels(); i++) {
             strip.setPixelColor(i, strip.Color(rn*(power*0.01), gn*(power*0.01), bn*(power*0.01)));
         }
         strip.show();
         delay(wait);
     }
+
+    for(j=1; j<steps; j++) {
+        rn = getIntermediate(r2, r1, steps, j);
+        gn = getIntermediate(g2, g1, steps, j);
+        bn = getIntermediate(b2, b1, steps, j);
+        for(i=1; i< strip.numPixels(); i++) {
+            strip.setPixelColor(i, strip.Color(rn*(power*0.01), gn*(power*0.01), bn*(power*0.01)));
+        }
+        strip.show();
+        delay(wait);
+    }
+}
+
+// Working weird
+void gradient(uint16_t r1, uint16_t g1, uint16_t b1, uint16_t r2, uint16_t g2, uint16_t b2) {
+  uint16_t i, pixels, rn, gn, bn;
+  pixels = strip.numPixels();
+
+  for(i=1; i<pixels; i++) {
+      rn = getIntermediate(r1, r2, pixels, i);
+      gn = getIntermediate(g1, g2, pixels, i);
+      bn = getIntermediate(b1, b2, pixels, i);
+      strip.setPixelColor(i, strip.Color(rn*(power*0.01), gn*(power*0.01), bn*(power*0.01)));
+      strip.show();
+  }
+  delay(1000);
 }
 
 // Input a value 0 to 255 to get a color value.

@@ -59,8 +59,13 @@
           </li>
 
           <li class="ui-field-contain">
-            <label for="color">Color:</label>
-            <input type="color" name="color" id="color" data-hightlight="true" disabled="true" />
+            <label for="color1">Color (1):</label>
+            <input type="color" name="color1" id="color1" data-hightlight="true" disabled="true" />
+          </li>
+
+          <li class="ui-field-contain">
+            <label for="color2">Color (2):</label>
+            <input type="color" name="color2" id="color2" data-hightlight="true" disabled="true" />
           </li>
         </ul>
       </form>
@@ -121,9 +126,19 @@
       })
       loading++
 
-      $.getJSON('/color', (data) => {
-        $('#color').val(data.result)
-        $('#color').textinput('enable')
+      $.getJSON('/color1', (data) => {
+        $('#color1').val(data.result)
+        $('#color1').textinput('enable')
+        loading--
+        if (loading == 0) {
+          $.mobile.loading('hide')
+        }
+      })
+      loading++
+
+      $.getJSON('/color2', (data) => {
+        $('#color2').val(data.result)
+        $('#color2').textinput('enable')
         loading--
         if (loading == 0) {
           $.mobile.loading('hide')
@@ -177,15 +192,29 @@
         })
       })
 
-      $('#color').on('change', () => {
+      $('#color1').on('change', () => {
         $.mobile.loading('show', {
           text: 'Applying',
           textVisible: true,
           theme: "b"
         })
 
-        $.post('/color', {
-          'color': one.color($('#color').val()).hex().substring(1)
+        $.post('/color1', {
+          'color1': one.color($('#color1').val()).hex().substring(1)
+        }, (data) => {
+          $.mobile.loading('hide')
+        })
+      })
+
+      $('#color2').on('change', () => {
+        $.mobile.loading('show', {
+          text: 'Applying',
+          textVisible: true,
+          theme: "b"
+        })
+
+        $.post('/color2', {
+          'color2': one.color($('#color2').val()).hex().substring(1)
         }, (data) => {
           $.mobile.loading('hide')
         })

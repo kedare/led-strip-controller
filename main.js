@@ -23,6 +23,12 @@ const modes = {
   colorWipe: {
     params: null,
   },
+  fadeCycle: {
+    params: null,
+  },
+  gradient: {
+    params: null,
+  },
   rainbow: {
     params: null,
   },
@@ -134,7 +140,8 @@ app.get('/modes', auth, (req, res) => {
 defineAccessor('mode', 'mode', 'setMode')
 defineAccessor('wait', 'wait', 'setWait')
 defineAccessor('power', 'power', 'setPower')
-defineAccessor('color', 'color', 'setColor')
+defineAccessor('color1', 'color1', 'setColor1')
+defineAccessor('color2', 'color2', 'setColor2')
 
 app.listen(httpPort, () => {
   log.info('Express listening on', httpPort)
