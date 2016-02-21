@@ -82,7 +82,7 @@
 
       $.getJSON('/modes', (data) => {
         $.each(data, (key, val) => {
-          $('#mode').append(`<option value="${key}">${key}: ${data}</option>`)
+          $('#mode').append(`<option value="${key}">${key}: ${val}</option>`)
         })
         loading--
         if (loading == 0) {
