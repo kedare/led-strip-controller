@@ -77,7 +77,7 @@
       $.mobile.loading('show', {
         text: 'Loading',
         textVisible: true,
-        theme: 'b'
+        theme: 'b',
       })
 
       $.getJSON('/modes', (data) => {
@@ -94,7 +94,7 @@
       $.getJSON('/mode', (data) => {
         $('#mode').val(data.result)
         $('#mode').selectmenu('enable')
-        $('#mode').selectmenu("refresh", true)
+        $('#mode').selectmenu('refresh', true)
 
 
         loading--
@@ -151,11 +151,11 @@
         $.mobile.loading('show', {
           text: 'Applying',
           textVisible: true,
-          theme: "b"
+          theme: 'b',
         })
 
         $.post('/mode', {
-          'mode': $('#mode').val()
+          mode: $('#mode').val(),
         }, (data) => {
           $.mobile.loading('hide')
         })
@@ -167,11 +167,11 @@
         $.mobile.loading('show', {
           text: 'Applying',
           textVisible: true,
-          theme: "b"
+          theme: 'b',
         })
 
         $.post('/wait', {
-          'wait': $('#wait').val()
+          wait: $('#wait').val(),
         }, (data) => {
           $.mobile.loading('hide')
         })
@@ -182,11 +182,11 @@
         $.mobile.loading('show', {
           text: 'Applying',
           textVisible: true,
-          theme: "b"
+          theme: 'b',
         })
 
         $.post('/power', {
-          'power': $('#power').val()
+          power: $('#power').val(),
         }, (data) => {
           $.mobile.loading('hide')
         })
@@ -196,11 +196,11 @@
         $.mobile.loading('show', {
           text: 'Applying',
           textVisible: true,
-          theme: "b"
+          theme: 'b',
         })
 
         $.post('/color1', {
-          'color1': one.color($('#color1').val()).hex().substring(1)
+          color1: one.color($('#color1').val()).hex().substring(1),
         }, (data) => {
           $.mobile.loading('hide')
         })
@@ -210,11 +210,11 @@
         $.mobile.loading('show', {
           text: 'Applying',
           textVisible: true,
-          theme: "b"
+          theme: 'b',
         })
 
         $.post('/color2', {
-          'color2': one.color($('#color2').val()).hex().substring(1)
+          color2: one.color($('#color2').val()).hex().substring(1),
         }, (data) => {
           $.mobile.loading('hide')
         })
