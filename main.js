@@ -17,36 +17,15 @@ const authorizedPass = process.env.LED_CONTROLLER_PASS || 'password'
 
 // Allowed mode and params
 const modes = {
-  steadyColor: {
-    params: null,
-  },
-  colorWipe: {
-    params: null,
-  },
-  fadeCycle: {
-    params: null,
-  },
-  gradient: {
-    params: null,
-  },
-  rainbow: {
-    params: null,
-  },
-  rainbowCycle: {
-    params: null,
-  },
-  fullColorCycle: {
-    params: null,
-  },
-  randomDots: {
-    params: null,
-  },
-  frozen: {
-    params: null,
-  },
-  turnedOff: {
-    params: null,
-  },
+  colorWipe: 'Fixed custom color',
+  fadeCycle: 'Cycle between 2 colors',
+  gradient: 'Gradient between 2 colors',
+  rainbow: 'Short color spectrum'    ,
+  rainbowCycle: 'Large color spectrum',
+  fullColorCycle: 'Cycle between all the colors',
+  randomDots: 'Random dots (colors and positions)',
+  frozen: 'Freeze to current state',
+  off: 'Turn off',
 }
 
 // Device

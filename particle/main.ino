@@ -110,9 +110,6 @@ void loop() {
     if (mode == "colorWipe") {
         colorWipe(strip.Color(colorRgb1[0]*(power*0.01), colorRgb1[1]*(power*0.01), colorRgb1[2]*(power*0.01)));
     }
-    else if(mode == "steadyColor") {
-        steadyColor(strip.Color(colorRgb1[0]*(power*0.01), colorRgb1[1]*(power*0.01), colorRgb1[2]*(power*0.01)));
-    }
     else if (mode == "fadeCycle") {
         fadeCycle(100, colorRgb1[0], colorRgb1[1], colorRgb1[2], colorRgb2[0], colorRgb2[1], colorRgb2[2]);
     }
@@ -164,14 +161,6 @@ void loop() {
   //randomDot(5);
 
   //colorAll(strip.Color(0, 255, 255), 50); // Magenta
-}
-
-void steadyColor(uint32_t c) {
-    for(uint16_t i=0; i<strip.numPixels(); i++) {
-        strip.setPixelColor(i, c);
-    }
-    strip.show();
-    delay(1000);
 }
 
 void turnedOff() {
